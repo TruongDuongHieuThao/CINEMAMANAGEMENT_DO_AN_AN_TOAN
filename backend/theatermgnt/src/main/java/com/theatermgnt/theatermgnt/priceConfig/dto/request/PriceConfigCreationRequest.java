@@ -1,0 +1,28 @@
+package com.theatermgnt.theatermgnt.priceConfig.dto.request;
+
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.NotNull;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class PriceConfigCreationRequest {
+
+    @NotNull
+    String seatTypeId;
+
+    @NotNull
+    String dayType;
+
+    @NotNull
+    String timeSlot;
+
+    @NotNull
+    BigDecimal price;
+}

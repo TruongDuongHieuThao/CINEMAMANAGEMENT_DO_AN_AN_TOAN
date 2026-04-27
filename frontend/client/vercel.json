@@ -1,0 +1,25 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api-backend/:path*",
+      "destination": "http://localhost:8080/api/theater-mgnt/:path*"
+    },
+    {
+      "source": "/api/movies/:path*",
+      "destination": "http://localhost:8080/api/movies/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api-backend/:path*",
+      "headers": [
+        {
+          "key": "X-Forwarded-Proto",
+          "value": "https"
+        }
+      ]
+    }
+  ]
+}

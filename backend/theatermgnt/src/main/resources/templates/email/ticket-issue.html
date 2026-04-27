@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${subject}">Your Movie Ticket</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .container {
+            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+            padding-bottom: 10px;
+            border-radius: 5px;
+            line-height: 1.8;
+        }
+
+        .header {
+            border-bottom: 1px solid #eee;
+        }
+
+        .header a {
+            font-size: 1.4em;
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ticket-code {
+            background: linear-gradient(to right, #00bc69 0, #00bc88 50%, #00bca8 100%);
+            margin: 12px auto;
+            width: max-content;
+            padding: 4px 14px;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 10px 0;
+            vertical-align: top;
+            border-bottom: 1px solid #eee;
+        }
+
+        .price {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .footer {
+            color: #aaa;
+            font-size: 0.8em;
+            line-height: 1;
+            font-weight: 300;
+        }
+
+        .email-info {
+            color: #666;
+            font-weight: 400;
+            font-size: 13px;
+            line-height: 18px;
+            padding-bottom: 6px;
+        }
+
+        .email-info a {
+            text-decoration: none;
+            color: #00bc69;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <a th:text="${appName}">[App Name]</a>
+    </div>
+
+    <br />
+
+    <!-- Greeting -->
+    <strong th:text="'Dear ' + ${username} + ','">Dear User,</strong>
+
+    <p>
+        Thank you for your booking at
+        <strong th:text="${appName}">[App Name]</strong>.
+        <br />
+        Below are your movie ticket details.
+    </p>
+
+    <!-- Booking info -->
+    <div class="ticket-code" th:text="'Booking Code: ' + ${bookingCode}">
+        Booking Code: ABC123
+    </div>
+
+    <p style="font-size: 0.9em">
+        <strong>Movie:</strong>
+        <span th:text="${movieName}">Movie Name</span>
+        <br />
+        <strong>Showtime:</strong>
+        <span th:text="${showTime}">2025-01-01 19:00</span>
+        <br />
+        <strong>Cinema:</strong>
+        <span th:text="${cinema}">Cifastar HCM</span>
+    </p>
+
+    <!-- Ticket list -->
+    <h4 style="margin-top: 20px">🎟 Ticket Details</h4>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Seat</th>
+            <th>Ticket Code</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ticket : ${tickets}">
+            <td>
+                <strong>
+                    <span th:text="${ticket.seatCode}">F12</span>
+                    (<span th:text="${ticket.seatType}">VIP</span>)
+                </strong>
+            </td>
+
+            <td>
+                <span th:text="${ticket.ticketCode}">X88-01</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div style="
+    margin-top: 20px;
+    padding: 14px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #00bc69;
+    font-size: 0.9em;
+">
+        <strong>📎 QR Check-in Instructions</strong>
+        <p style="margin: 6px 0 0 0;">
+            Each ticket has a <strong>QR code attached to this email</strong>.
+            <br />
+            Please <strong>open the attached QR image</strong> and present it
+            at the cinema entrance for check-in.
+        </p>
+    </div>
+
+    <!-- Total -->
+    <p style="margin-top: 12px">
+        <strong>Total Amount:</strong>
+        <span
+                th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')}">
+            160,000
+        </span> VND
+    </p>
+
+    <p style="font-size: 0.9em">
+        Please present this email or scan the QR code at the cinema entrance.
+        <br /><br />
+        Enjoy the movie!
+        <br />
+        <strong th:text="${companyName}">[Company Name]</strong>
+    </p>
+
+    <hr style="border: none; border-top: 0.5px solid #131111" />
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This email can't receive replies.</p>
+        <p>
+            For more information about
+            <span th:text="${appName}">[App Name]</span>, visit
+            <strong th:text="${companyName}">[Company Name]</strong>
+        </p>
+    </div>
+</div>
+
+<!-- Bottom info -->
+<div style="text-align: center">
+    <div class="email-info">
+        This email was sent to
+        <a th:href="'mailto:' + ${email}" th:text="${email}">user@example.com</a>
+    </div>
+    <div class="email-info">
+        <a th:href="${companyUrl}" th:text="${companyName}">[Company Name]</a>
+        |
+        <span th:text="${companyAddress}">[Address]</span>
+    </div>
+    <div class="email-info">
+        &copy;
+        <span th:text="${year}">2025</span>
+        <span th:text="${companyName}">[Company Name]</span>.
+        All rights reserved.
+    </div>
+</div>
+</body>
+</html>

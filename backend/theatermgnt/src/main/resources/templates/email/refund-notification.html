@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Refund Confirmation</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #333; }
+    .container { max-width: 640px; margin: 0 auto; padding: 16px; }
+    .header { border-bottom: 1px solid #eee; margin-bottom: 16px; }
+    .footer { border-top: 1px solid #eee; margin-top: 16px; font-size: 12px; color: #777; }
+    .amount { color: #b32d2e; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 th:text="${subject}">Refund Confirmation</h2>
+    </div>
+
+    <p>Hello <strong th:text="${username}">Customer</strong>,</p>
+    <p>Your booking <strong th:text="${bookingCode}">BOOKING_ID</strong> has been refunded successfully.</p>
+
+    <ul>
+      <li>Movie: <span th:text="${movieName}">Movie Name</span></li>
+      <li>Showtime: <span th:text="${showTime}">2026-01-14 19:00</span></li>
+      <li>Cinema: <span th:text="${cinema}">Cinema Name</span></li>
+    </ul>
+
+    <p>Refunded Amount: <span class="amount" th:text="${refundAmount}">0 VND</span></p>
+
+    <p>If you have any questions, please reply to this email.</p>
+
+    <div class="footer">
+      <p>&copy; <span th:text="${year}">2026</span> <span th:text="${companyName}">Cifastar</span>. <span th:text="${companyAddress}">Address</span></p>
+      <p><a th:href="${companyUrl}" th:text="${companyUrl}">Company URL</a></p>
+    </div>
+  </div>
+</body>
+</html>

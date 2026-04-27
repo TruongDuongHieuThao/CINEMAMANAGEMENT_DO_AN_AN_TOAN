@@ -1,0 +1,15 @@
+package com.theatermgnt.theatermgnt.authentication.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ResetPasswordRequest {
+    String loginIdentifier;
+    String otpCode;
+    String newPassword;
+}

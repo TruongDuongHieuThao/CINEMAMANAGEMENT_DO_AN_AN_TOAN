@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}">Welcome to Cifastar HCM</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            background-color: #7c3aed;
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .credentials {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .credentials p {
+            margin: 8px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 25px;
+            background-color: #7c3aed;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .warning {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #dc2626;
+            border-left: 4px solid #dc2626;
+            padding-left: 12px;
+            font-style: italic;
+        }
+
+        .footer {
+            background-color: #f9fafb;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>Cifastar HCM 🎬</h1>
+        <p>Welcome to our cinema system</p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p>
+            Hi <strong th:text="${name}">Customer Name</strong>,
+        </p>
+
+        <p>
+            Thank you for choosing <strong>Cifastar HCM</strong> 🎉
+            Your customer account has been successfully created.
+        </p>
+
+        <p>
+            You can now log in to our system to:
+        </p>
+
+        <ul>
+            <li>🎟 Book movie tickets online</li>
+            <li>🍿 Manage combos & promotions</li>
+            <li>📜 View booking history</li>
+        </ul>
+
+        <!-- Credentials -->
+        <div class="credentials">
+            <p><strong>Login information:</strong></p>
+            <p>
+                Email:
+                <strong th:text="${username}">email@example.com</strong>
+            </p>
+            <p>
+                Temporary password:
+                <strong th:text="${password}">password</strong>
+            </p>
+        </div>
+
+        <div style="text-align: center;">
+            <a class="btn"
+               th:href="${loginUrl}"
+               href="#">
+                Login to Cifastar
+            </a>
+        </div>
+
+        <div class="warning">
+            For security reasons, please change your password immediately after your first login.
+        </div>
+
+        <p>
+            If you have any questions, feel free to contact our support team.
+        </p>
+
+        <p>
+            Enjoy your movie time! 🍿🎥
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        © 2025 Cifastar HCM. All rights reserved.<br>
+        This is an automated email, please do not reply.
+    </div>
+
+</div>
+
+</body>
+</html>
