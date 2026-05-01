@@ -1,6 +1,9 @@
 package com.theatermgnt.theatermgnt.authentication.service;
 
 import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -58,6 +61,14 @@ public class AuthenticationService {
     @NonFinal
     @Value("${otp.valid-duration}")
     protected long OTP_VALID_DURATION;
+
+    private byte[] signerKeyBytes() {
+        try {
+            return MessageDigest.getInstance("SHA-512").digest(SIGNER_KEY.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-512 algorithm not available", e);
+        }
+    }
 
     /// INTROSPECT
     public IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException {
@@ -211,8 +222,16 @@ public class AuthenticationService {
 
     /// VERIFY TOKEN
     private SignedJWT verifyToken(String token, boolean isRefreshToken) throws JOSEException, ParseException {
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
+
+        // BLOCK: reject bất kỳ alg nào không phải HS512
+        JWSAlgorithm alg = signedJWT.getHeader().getAlgorithm();
+        if (!JWSAlgorithm.HS512.equals(alg)) {
+            log.warn("Rejected JWT with unexpected algorithm: {}", alg);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        JWSVerifier verifier = new MACVerifier(signerKeyBytes());
 
         Date expiryTime = (isRefreshToken)
                 ? new Date(signedJWT

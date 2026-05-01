@@ -1,7 +1,11 @@
-import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from "axios";
+import axios, {
+  AxiosError,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+} from "axios";
 import { CONFIG } from "./configuration";
 import { ApiError, ApiResponse } from "@/lib/errors";
-import { clearAuthData } from "@/services/localStorageService";
+import { getToken } from "@/services/localStorageService";
 import { requestTokenRefresh } from "@/services/tokenRefresh";
 import { useAuthStore } from "@/store";
 
@@ -11,6 +15,7 @@ const httpClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Always send cookies
 });
 
 const PUBLIC_API_PATHS = [
@@ -35,25 +40,34 @@ const isPublicRequest = (url?: string) => {
 // Request interceptor
 httpClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Add auth token from localStorage
+    // Add fallback Authorization header for APIs still expecting Bearer token
     if (typeof window !== "undefined" && !isPublicRequest(config.url)) {
-      const token = localStorage.getItem("customer_token");
-      if (token && config.headers) {
+      const token = getToken();
+      if (token && config.headers && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+
+      // For CSRF protection, add X-XSRF-TOKEN header if needed
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("XSRF-TOKEN="))
+        ?.split("=")[1];
+      if (csrfToken && config.headers) {
+        config.headers["X-XSRF-TOKEN"] = csrfToken;
       }
     }
     return config;
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 const handleAuthFailure = () => {
   if (typeof window === "undefined") {
     return;
   }
-  clearAuthData();
+  // No longer clear localStorage - cookies will be cleared by logout API
   useAuthStore.getState().logout();
 };
 
@@ -67,13 +81,13 @@ const isRefreshRequest = (url?: string) => {
 httpClient.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
     // Check if response has standard format
-    if (response.data && typeof response.data.code !== 'undefined') {
+    if (response.data && typeof response.data.code !== "undefined") {
       // If code !== 1000, treat as error
       if (response.data.code !== 1000) {
         const apiError = new ApiError(
           response.data.code,
           response.data.message || "Request failed",
-          response.data
+          response.data,
         );
         return Promise.reject(apiError);
       }
@@ -94,21 +108,22 @@ httpClient.interceptors.response.use(
         !isRefreshRequest(originalRequest.url) &&
         !isPublicRequest(originalRequest.url)
       ) {
-        originalRequest._retry = true;
-        const refreshedToken = await requestTokenRefresh();
-        if (refreshedToken && originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
-          return httpClient(originalRequest);
-        }
+        // Disable token refresh for now - using cookies
+        // originalRequest._retry = true;
+        // const refreshedToken = await requestTokenRefresh();
+        // if (refreshedToken && originalRequest.headers) {
+        //   originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
+        //   return httpClient(originalRequest);
+        // }
         handleAuthFailure();
       }
-      
+
       // If backend returns standard format even in error response
-      if (typeof data.code !== 'undefined') {
+      if (typeof data.code !== "undefined") {
         const apiError = new ApiError(
           data.code,
           data.message || "Request failed",
-          data
+          data,
         );
         return Promise.reject(apiError);
       }
@@ -118,12 +133,9 @@ httpClient.interceptors.response.use(
       handleAuthFailure();
     }
 
-    // Handle network errors or other errors
-    if (error.response?.status !== 401) {
-      console.error("API Error:", error);
-    }
+    // Avoid noisy console errors in UI overlay; callers handle error rendering
     return Promise.reject(error);
-  }
+  },
 );
 
 export default httpClient;

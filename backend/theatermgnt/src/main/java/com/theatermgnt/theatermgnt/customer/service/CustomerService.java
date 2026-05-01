@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.theatermgnt.theatermgnt.account.entity.Account;
+import com.theatermgnt.theatermgnt.account.repository.AccountRepository;
 import com.theatermgnt.theatermgnt.account.service.AccountService;
 import com.theatermgnt.theatermgnt.common.exception.AppException;
 import com.theatermgnt.theatermgnt.common.exception.ErrorCode;
@@ -32,6 +33,7 @@ public class CustomerService {
     CustomerRepository customerRepository;
     CustomerMapper customerMapper;
     AccountService accountService;
+    AccountRepository accountRepository;
 
     /// CREATE CUSTOMER PROFILE
     @Transactional
@@ -104,5 +106,30 @@ public class CustomerService {
                 customerRepository.findById(customerId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         customer.setLoyaltyPoints(customer.getLoyaltyPoints() + points);
         customerRepository.save(customer);
+    }
+
+    @Transactional
+    public CustomerResponse updateMyEmail(String newEmail) {
+        String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+        Customer customer = customerRepository
+                .findByAccountId(accountId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        Account account = customer.getAccount();
+        if (account == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+
+        if (!newEmail.equalsIgnoreCase(account.getEmail())
+                && accountRepository.existsByEmailAndDeletedFalse(newEmail)) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        account.setEmail(newEmail);
+        accountRepository.save(account);
+
+        CustomerResponse response = customerMapper.toCustomerResponse(customer);
+        response.setNoPassword(!StringUtils.hasText(account.getPassword()));
+        return response;
     }
 }

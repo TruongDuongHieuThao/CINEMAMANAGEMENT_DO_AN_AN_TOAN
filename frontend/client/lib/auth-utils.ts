@@ -1,5 +1,3 @@
-import { getToken } from "@/services/localStorageService";
-
 // Public routes that don't require authentication
 export const publicRoutes = [
   "/",
@@ -27,8 +25,18 @@ export const isPublicRoute = (pathname: string): boolean => {
 
 // Check if user is authenticated
 export const isAuthenticated = (): boolean => {
-  const token = getToken();
-  return !!token;
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    const persisted = localStorage.getItem("AuthStore");
+    if (!persisted) return false;
+    const parsed = JSON.parse(persisted);
+    return !!parsed?.state?.isAuthenticated;
+  } catch {
+    return false;
+  }
 };
 
 // Get redirect path after login

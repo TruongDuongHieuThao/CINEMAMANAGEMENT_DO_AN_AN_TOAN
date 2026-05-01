@@ -28,9 +28,7 @@ public class ApplicationInitConfig {
             prefix = "spring.datasource",
             name = "driver-class-name",
             havingValue = "org.postgresql.Driver")
-    ApplicationRunner applicationRunner(
-            AccountRepository accountRepository,
-            RegistrationService registrationService) {
+    ApplicationRunner applicationRunner(AccountRepository accountRepository, RegistrationService registrationService) {
         return args -> {
             // Check existed username "admin"
             if (accountRepository.findByUsername("admin").isEmpty()) {

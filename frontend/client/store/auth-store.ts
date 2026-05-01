@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { getToken } from "@/services/localStorageService";
+import httpClient from "@/configurations/httpClient";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -33,11 +34,19 @@ export const useAuthStore = create<AuthStore>()(
         },
 
         login: () => {
-          const token = getToken();
-          set({ isAuthenticated: !!token });
+          // No longer check localStorage - using cookies
+          set({ isAuthenticated: true });
         },
 
-        logout: () => {
+        logout: async () => {
+          try {
+            const token = getToken();
+            if (token) {
+              await httpClient.post("/auth/logout", { token });
+            }
+          } catch (error) {
+            // Ignore logout API failures on client-side state reset
+          }
           set({ isAuthenticated: false });
         },
 
@@ -46,15 +55,8 @@ export const useAuthStore = create<AuthStore>()(
         },
       }),
       {
-        name: "auth-storage", // Key in localStorage
-        partialize: (state) => ({ 
-          // Only persist isAuthenticated, not isChecking
-          isAuthenticated: state.isAuthenticated 
-        }),
-      }
+        name: "AuthStore", // Name in Redux DevTools
+      },
     ),
-    {
-      name: "AuthStore", // Name in Redux DevTools
-    }
-  )
+  ),
 );

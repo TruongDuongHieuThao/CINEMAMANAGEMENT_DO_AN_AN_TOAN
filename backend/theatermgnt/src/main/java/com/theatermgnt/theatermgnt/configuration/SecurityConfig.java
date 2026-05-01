@@ -1,5 +1,11 @@
 package com.theatermgnt.theatermgnt.configuration;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import jakarta.servlet.http.Cookie;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,7 +46,8 @@ public class SecurityConfig {
         "/screenings/**",
         "/payment/**",
         "/reviews/**",
-        "/cinemas/**"
+        "/cinemas/**",
+        "/security-lab/**"
     };
 
     @Autowired
@@ -48,8 +57,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
+        httpSecurity.authorizeHttpRequests(request -> request
+                .requestMatchers("/security-lab/**").permitAll()
+                .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                 .requestMatchers(
                         HttpMethod.GET,
                         "/movies/**",
@@ -62,7 +72,8 @@ public class SecurityConfig {
                 .anyRequest()
                 .authenticated());
 
-        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver())
+                .jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(customJwtDecoder)
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint((new JwtAuthenticationEntryPoint())));
@@ -96,6 +107,36 @@ public class SecurityConfig {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
+        return request -> {
+            // Security lab endpoints handle their own auth — skip Spring Security token processing
+            // so forged/malformed tokens don't get rejected before reaching the controller
+            String path = request.getServletPath();
+            if (path.startsWith("/security-lab/")) {
+                return null;
+            }
+
+            String bearerToken = defaultResolver.resolve(request);
+            if (bearerToken != null && !bearerToken.isBlank()) {
+                return bearerToken;
+            }
+
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) {
+                return null;
+            }
+
+            return Arrays.stream(cookies)
+                    .filter(cookie -> "access_token".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .map(value -> URLDecoder.decode(value, StandardCharsets.UTF_8))
+                    .orElse(null);
+        };
     }
 
     @Bean

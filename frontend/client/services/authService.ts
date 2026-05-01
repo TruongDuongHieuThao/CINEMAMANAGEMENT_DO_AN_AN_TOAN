@@ -34,40 +34,38 @@ export interface IntrospectResponse {
 
 // Login with email and password
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {
-  try {
-    const response = await httpClient.post<AuthResponse>(API.LOGIN, data);
-    
-    if (response.data.result?.token) {
-      setToken(response.data.result.token);
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error);
-    throw error;
+  const response = await httpClient.post<AuthResponse>(API.LOGIN, data, {
+    withCredentials: true, // Include cookies
+  });
+
+  // Keep a fallback Bearer token for endpoints/backends still expecting Authorization header
+  if (response.data.result?.token) {
+    setToken(response.data.result.token);
   }
+
+  return response.data;
 };
 
 // Register new customer
-export const register = async (data: RegisterRequest): Promise<AuthResponse> => {
-  try {
-    const response = await httpClient.post<AuthResponse>(API.REGISTER, data);
-    console.log("Registration Response:", response);
-    
-    if (response.data.result?.token) {
-      setToken(response.data.result.token);
-    }
-    
-    return response.data;
-  } catch (error) {
-    console.error("Registration failed:", error);
-    throw error;
+export const register = async (
+  data: RegisterRequest,
+): Promise<AuthResponse> => {
+  const response = await httpClient.post<AuthResponse>(API.REGISTER, data);
+
+  if (response.data.result?.token) {
+    setToken(response.data.result.token);
   }
+
+  return response.data;
 };
 
 // Introspect token validity
 export const introspectToken = async (token: string): Promise<boolean> => {
   try {
-    const response = await httpClient.post<IntrospectResponse>("/auth/introspect", { token });
+    const response = await httpClient.post<IntrospectResponse>(
+      "/auth/introspect",
+      { token },
+    );
     return !!response.data.result?.valid;
   } catch (error) {
     const status = (error as any)?.response?.status;

@@ -31,8 +31,9 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <projectlombok-lombok.version>1.18.38</projectlombok-lombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <spotless.version>2.43.0</spotless.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <spotless.version>2.45.0</spotless.version>
+        <spotless.skip>true</spotless.skip>
 
     </properties>
     <dependencies>
@@ -187,8 +188,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

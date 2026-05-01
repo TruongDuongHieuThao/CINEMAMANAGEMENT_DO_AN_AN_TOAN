@@ -2,9 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/store";
-import { clearAuthData, getToken } from "@/services/localStorageService";
-import { introspectToken } from "@/services/authService";
-import { requestTokenRefresh } from "@/services/tokenRefresh";
+import httpClient from "@/configurations/httpClient";
+import { getToken } from "@/services/localStorageService";
 
 /**
  * StoreInitializer - Initialize stores on app mount
@@ -12,7 +11,7 @@ import { requestTokenRefresh } from "@/services/tokenRefresh";
  */
 export function StoreInitializer({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
-  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const login = useAuthStore((state) => state.login);
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
@@ -22,24 +21,28 @@ export function StoreInitializer({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       const token = getToken();
-      if (token) {
-        const isValid = await introspectToken(token);
-        if (!isValid) {
-          const refreshedToken = await requestTokenRefresh();
-          if (!refreshedToken) {
-            clearAuthData();
-            logout();
-          }
-        }
+      if (!token) {
+        logout();
+        initialized.current = true;
+        return;
       }
 
-      // Initialize auth state on mount
-      checkAuth();
+      try {
+        const response = await httpClient.post("/auth/introspect", { token });
+        if (response.data?.result?.valid) {
+          login();
+        } else {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+
       initialized.current = true;
     };
 
     void initAuth();
-  }, [checkAuth, logout]);
+  }, [login, logout]);
 
   return <>{children}</>;
 }

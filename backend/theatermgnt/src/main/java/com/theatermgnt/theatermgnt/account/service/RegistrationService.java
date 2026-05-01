@@ -1,7 +1,6 @@
 package com.theatermgnt.theatermgnt.account.service;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
