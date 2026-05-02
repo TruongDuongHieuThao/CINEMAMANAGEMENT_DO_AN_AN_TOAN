@@ -80,14 +80,13 @@ export const updateMyEmailForCsrfDemo = async (
     "Content-Type": "application/x-www-form-urlencoded",
   };
 
-  if (mode === "defended") {
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("XSRF-TOKEN="))
-      ?.split("=")[1];
-    if (csrfToken) {
-      headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfToken);
-    }
+  // Luôn gửi CSRF token — browser hợp lệ đọc được cookie, HTML form của attacker không thể set header này
+  const csrfToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("XSRF-TOKEN="))
+    ?.split("=")[1];
+  if (csrfToken) {
+    headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfToken);
   }
 
   const response = await httpClient.post<{ result: CustomerInfo }>(
