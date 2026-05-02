@@ -1,4 +1,13 @@
-import axios from "axios"
+/**
+ * Ticket Service - Using httpClient with JWT Session Cookies
+ * 
+ * Migration: Manual Bearer Token Header → httpOnly Cookie Session
+ * - No longer manually reading tokens from localStorage
+ * - Use httpClient which automatically sends cookies via withCredentials
+ * - Backend reads JWT from cookie (not Authorization header)
+ */
+
+import httpClient from "@/configurations/httpClient"
 import { CONFIG } from "@/configurations/configuration"
 
 const API_BASE_URL = CONFIG.API
@@ -17,15 +26,13 @@ export interface TicketResponse {
   createdAt?: string
 }
 
+/**
+ * Get tickets by booking ID
+ * Cookie automatically sent via httpClient.withCredentials
+ */
 export const getTicketsByBooking = async (bookingId: string): Promise<TicketResponse[]> => {
   try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("customer_token") : null
-    
-    const response = await axios.get(`${API_BASE_URL}/tickets/by-booking/${bookingId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const response = await httpClient.get(`/tickets/by-booking/${bookingId}`)
 
     // Handle the ApiResponse wrapper
     if (response.data?.result) {
@@ -39,15 +46,13 @@ export const getTicketsByBooking = async (bookingId: string): Promise<TicketResp
   }
 }
 
+/**
+ * Get tickets by customer ID
+ * Cookie automatically sent via httpClient.withCredentials
+ */
 export const getTicketsByCustomer = async (customerId: string): Promise<TicketResponse[]> => {
   try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("customer_token") : null
-    
-    const response = await axios.get(`${API_BASE_URL}/tickets/my-tickets/${customerId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const response = await httpClient.get(`/tickets/my-tickets/${customerId}`)
 
     // Handle the ApiResponse wrapper
     if (response.data?.result) {
@@ -61,18 +66,17 @@ export const getTicketsByCustomer = async (customerId: string): Promise<TicketRe
   }
 }
 
+/**
+ * Mark ticket for transfer
+ * Cookie automatically sent via httpClient.withCredentials
+ */
 export const markTicketForTransfer = async (ticketCode: string, customerId: string): Promise<void> => {
   try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("customer_token") : null
-    
-    await axios.post(
-      `${API_BASE_URL}/tickets/${ticketCode}/mark-for-transfer`,
+    await httpClient.post(
+      `/tickets/${ticketCode}/mark-for-transfer`,
       null,
       {
         params: { customerId },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       }
     )
   } catch (error) {
@@ -81,18 +85,17 @@ export const markTicketForTransfer = async (ticketCode: string, customerId: stri
   }
 }
 
+/**
+ * Cancel ticket transfer
+ * Cookie automatically sent via httpClient.withCredentials
+ */
 export const cancelTicketTransfer = async (ticketCode: string, customerId: string): Promise<void> => {
   try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("customer_token") : null
-    
-    await axios.post(
-      `${API_BASE_URL}/tickets/${ticketCode}/cancel-transfer`,
+    await httpClient.post(
+      `/tickets/${ticketCode}/cancel-transfer`,
       null,
       {
         params: { customerId },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       }
     )
   } catch (error) {

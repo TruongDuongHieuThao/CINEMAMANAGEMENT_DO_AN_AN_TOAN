@@ -1,6 +1,15 @@
+/**
+ * Movie API Client - JWT Session (httpOnly Cookie)
+ * 
+ * Migration: Manual Bearer Token Header → httpOnly Cookie Session
+ * - No longer manually reading tokens from localStorage
+ * - Use shared httpClient which automatically sends cookies via withCredentials
+ * - Backend reads JWT from cookie (not Authorization header)
+ * 
+ * Note: This file can be deprecated in favor of using httpClient directly
+ */
+
 import axios from 'axios'
-import { clearAuthData } from '@/services/localStorageService'
-import { requestTokenRefresh } from "@/services/tokenRefresh";
 import { useAuthStore } from '@/store'
 import { CONFIG } from '@/configurations/configuration'
 import type { Seat, ComboItem } from './types'
@@ -11,53 +20,30 @@ const API_BASE_URL = CONFIG.API
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  // timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  // CRITICAL: Allow httpOnly cookies to be sent with cross-site requests
+  withCredentials: true,
 })
-
-const PUBLIC_API_PATHS = [
-  "/movies",
-  "/genres",
-  "/screenings",
-  "/cinemas",
-  "/reviews",
-  "/payment",
-];
-
-const isPublicRequest = (url?: string) => {
-  if (!url) {
-    return false;
-  }
-  const path = url.startsWith("http") ? new URL(url).pathname : url;
-  return PUBLIC_API_PATHS.some((publicPath) => path.startsWith(publicPath));
-};
 
 const handleAuthFailure = () => {
   if (typeof window === "undefined") {
     return;
   }
-  clearAuthData();
   useAuthStore.getState().logout();
 };
 
-const isRefreshRequest = (url?: string) => {
-  if (!url) return false;
-  const path = url.startsWith("http") ? new URL(url).pathname : url;
-  return path.startsWith("/auth/refresh");
-};
 
-
+// Request interceptor
+/**
+ * Cookies automatically sent by browser (withCredentials: true)
+ * No Authorization header needed
+ * Backend reads token from cookie in SecurityConfig.BearerTokenResolver
+ */
 api.interceptors.request.use(
   (config) => {
-    // Add auth token from localStorage
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("customer_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
+    // Cookies handled automatically by browser
     return config;
   },
   (error) => {
@@ -79,29 +65,18 @@ api.interceptors.response.use(
     const status = error?.response?.status;
     const code = error?.response?.data?.code;
     const url = error?.config?.url;
-    const originalRequest = error?.config;
     const isCancelBookingRequest =
       typeof url === "string" &&
       url.includes("/bookings/") &&
       url.endsWith("/cancel");
+    
+    // Handle 401 Unauthorized - let backend handle cookie refresh
     if (status === 401 || code === 1006) {
-      if (
-        originalRequest &&
-        !originalRequest._retry &&
-        !isRefreshRequest(originalRequest.url) &&
-        !isPublicRequest(originalRequest.url)
-      ) {
-        originalRequest._retry = true;
-        const refreshedToken = await requestTokenRefresh();
-        if (refreshedToken && originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
-          return api(originalRequest);
-        }
-      }
       handleAuthFailure();
+      return Promise.reject(error);
     }
     
-    // Bỏ qua log lỗi 404 khi lookup movie (slug/id fallback logic)
+    // Omit logging for specific non-critical errors (e.g., 404 on movie lookup fallback)
     const isMovieLookup = url && typeof url === 'string' && 
       (url.includes('/movies/') || url.includes('movies/'));
     

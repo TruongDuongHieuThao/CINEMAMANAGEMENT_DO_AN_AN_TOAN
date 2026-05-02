@@ -1,3 +1,16 @@
+/**
+ * HTTP Client - Axios Instance with JWT Session Support
+ * 
+ * IMPORTANT: JWT tokens are now in httpOnly cookies
+ * - Cookies automatically sent with each request (browser behavior)
+ * - No Authorization header needed for JWT
+ * - Set withCredentials: true to allow cross-site cookie sending
+ * 
+ * Migration: Bearer Authorization Header → httpOnly Cookie
+ * @see SecurityConfig.java - BearerTokenResolver reads from cookie
+ * @see AuthenticationController.java - setAuthCookies() for cookie details
+ */
+
 import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
@@ -5,8 +18,6 @@ import axios, {
 } from "axios";
 import { CONFIG } from "./configuration";
 import { ApiError, ApiResponse } from "@/lib/errors";
-import { getToken } from "@/services/localStorageService";
-import { requestTokenRefresh } from "@/services/tokenRefresh";
 import { useAuthStore } from "@/store";
 
 const httpClient = axios.create({
@@ -15,66 +26,16 @@ const httpClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Always send cookies
+  // CRITICAL: Allow httpOnly cookies to be sent with cross-site requests
+  // This is required for JWT session cookies to work properly
+  withCredentials: true,
 });
-
-const PUBLIC_API_PATHS = [
-  "/auth",
-  "/register",
-  "/movies",
-  "/genres",
-  "/screenings",
-  "/cinemas",
-  "/reviews",
-  "/payment",
-];
-
-const isPublicRequest = (url?: string) => {
-  if (!url) {
-    return false;
-  }
-  const path = url.startsWith("http") ? new URL(url).pathname : url;
-  return PUBLIC_API_PATHS.some((publicPath) => path.startsWith(publicPath));
-};
-
-// Request interceptor
-httpClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Add fallback Authorization header for APIs still expecting Bearer token
-    if (typeof window !== "undefined" && !isPublicRequest(config.url)) {
-      const token = getToken();
-      if (token && config.headers && !config.headers.Authorization) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      // For CSRF protection, add X-XSRF-TOKEN header if needed
-      const csrfToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("XSRF-TOKEN="))
-        ?.split("=")[1];
-      if (csrfToken && config.headers) {
-        config.headers["X-XSRF-TOKEN"] = csrfToken;
-      }
-    }
-    return config;
-  },
-  (error: AxiosError) => {
-    return Promise.reject(error);
-  },
-);
 
 const handleAuthFailure = () => {
   if (typeof window === "undefined") {
     return;
   }
-  // No longer clear localStorage - cookies will be cleared by logout API
   useAuthStore.getState().logout();
-};
-
-const isRefreshRequest = (url?: string) => {
-  if (!url) return false;
-  const path = url.startsWith("http") ? new URL(url).pathname : url;
-  return path.startsWith("/auth/refresh");
 };
 
 // Response interceptor
@@ -98,23 +59,17 @@ httpClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
     // Handle HTTP errors (4xx, 5xx)
     if (error.response?.data) {
       const data = error.response.data;
+      
+      // Token expired or invalid - handled by backend via cookie refresh
       if (
         (error.response.status === 401 || data.code === 1006) &&
         originalRequest &&
-        !originalRequest._retry &&
-        !isRefreshRequest(originalRequest.url) &&
-        !isPublicRequest(originalRequest.url)
+        !originalRequest._retry
       ) {
-        // Disable token refresh for now - using cookies
-        // originalRequest._retry = true;
-        // const refreshedToken = await requestTokenRefresh();
-        // if (refreshedToken && originalRequest.headers) {
-        //   originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
-        //   return httpClient(originalRequest);
-        // }
         handleAuthFailure();
       }
 

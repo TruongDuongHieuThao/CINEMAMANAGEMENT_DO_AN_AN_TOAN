@@ -1,3 +1,12 @@
+/**
+ * Authentication Utilities - JWT Session (httpOnly Cookie)
+ * 
+ * Migration: Bearer Token (localStorage) → httpOnly Session Cookie
+ * - No longer checking localStorage for token
+ * - Use Zustand store for authentication state
+ * - Backend validates JWT on each request via cookie
+ */
+
 // Public routes that don't require authentication
 export const publicRoutes = [
   "/",
@@ -23,13 +32,19 @@ export const isPublicRoute = (pathname: string): boolean => {
   return publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
 };
 
-// Check if user is authenticated
+/**
+ * Check if user is authenticated
+ * - Uses Zustand store to check auth state
+ * - Store state is persisted and checked on page reload
+ * - Backend validates JWT signature on each request
+ */
 export const isAuthenticated = (): boolean => {
   if (typeof window === "undefined") {
     return false;
   }
 
   try {
+    // Read from persisted Zustand store
     const persisted = localStorage.getItem("AuthStore");
     if (!persisted) return false;
     const parsed = JSON.parse(persisted);

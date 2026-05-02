@@ -1,6 +1,18 @@
+/**
+ * Authentication Service - JWT Session (httpOnly Cookie)
+ * 
+ * Migration: Bearer Token → httpOnly Cookie Session
+ * - Token is now stored in httpOnly cookie by backend
+ * - Browser auto-sends cookie with each request (via withCredentials: true)
+ * - No localStorage storage needed
+ * - Authorization header no longer used for JWT
+ * 
+ * @see SecurityConfig.java - BearerTokenResolver supports cookie reading
+ * @see AuthenticationController.java - setAuthCookies() sets httpOnly cookie
+ */
+
 import httpClient from "../configurations/httpClient";
 import { API } from "../configurations/configuration";
-import { setToken, getToken } from "./localStorageService";
 
 export interface LoginRequest {
   loginIdentifier: string;
@@ -32,34 +44,40 @@ export interface IntrospectResponse {
   };
 }
 
-// Login with email and password
+/**
+ * Login with email and password
+ * - Backend returns token in response AND sets httpOnly cookie
+ * - Frontend stores auth state (managed by store)
+ * - Token lifecycle managed entirely by browser cookies
+ */
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {
   const response = await httpClient.post<AuthResponse>(API.LOGIN, data, {
     withCredentials: true, // Include cookies
   });
 
-  // Keep a fallback Bearer token for endpoints/backends still expecting Authorization header
-  if (response.data.result?.token) {
-    setToken(response.data.result.token);
-  }
+  // NO localStorage storage anymore - token is in httpOnly cookie
+  // Backend will set the cookie automatically via Set-Cookie header
 
   return response.data;
 };
 
-// Register new customer
+/**
+ * Register new customer
+ * - Backend returns token in response AND sets httpOnly cookie
+ */
 export const register = async (
   data: RegisterRequest,
 ): Promise<AuthResponse> => {
   const response = await httpClient.post<AuthResponse>(API.REGISTER, data);
 
-  if (response.data.result?.token) {
-    setToken(response.data.result.token);
-  }
+  // NO localStorage storage - cookie is set by backend
 
   return response.data;
 };
 
-// Introspect token validity
+/**
+ * Introspect token validity
+ */
 export const introspectToken = async (token: string): Promise<boolean> => {
   try {
     const response = await httpClient.post<IntrospectResponse>(

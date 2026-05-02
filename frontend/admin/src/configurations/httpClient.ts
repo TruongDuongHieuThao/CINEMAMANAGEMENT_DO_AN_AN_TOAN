@@ -1,8 +1,21 @@
+/**
+ * HTTP Client - Axios Instance with JWT Session Support
+ * 
+ * IMPORTANT: JWT tokens are now in httpOnly cookies
+ * - Cookies automatically sent with each request (browser behavior)
+ * - No Authorization header needed for JWT
+ * - Set withCredentials: true to allow cross-site cookie sending
+ * 
+ * Migration: Bearer Authorization Header → httpOnly Cookie
+ * @see SecurityConfig.java - BearerTokenResolver reads from cookie
+ * @see AuthenticationController.java - setAuthCookies() for cookie details
+ */
+
 import axios from "axios";
 import { API, CONFIG } from "./configuration";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { ROUTES } from "@/routes/routes";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const httpClient = axios.create({
   baseURL: CONFIG.API,
@@ -10,15 +23,21 @@ const httpClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // CRITICAL: Allow httpOnly cookies to be sent with cross-site requests
+  // This is required for JWT session cookies to work properly
+  withCredentials: true,
 });
 
-// Request interceptor - add auth token
+/**
+ * Request Interceptor
+ * - Cookies automatically sent by browser (withCredentials: true)
+ * - No Authorization header needed
+ * - Backend reads token from cookie in SecurityConfig.BearerTokenResolver
+ */
 httpClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // Cookies handled automatically by browser
+    // No Authorization header needed anymore
     return config;
   },
   (error) => {
