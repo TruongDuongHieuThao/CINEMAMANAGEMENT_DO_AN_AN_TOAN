@@ -7,6 +7,8 @@
  * - Backend validates JWT on each request via cookie
  */
 
+import { useAuthStore } from "@/store";
+
 // Public routes that don't require authentication
 export const publicRoutes = [
   "/",
@@ -43,15 +45,7 @@ export const isAuthenticated = (): boolean => {
     return false;
   }
 
-  try {
-    // Read from persisted Zustand store
-    const persisted = localStorage.getItem("AuthStore");
-    if (!persisted) return false;
-    const parsed = JSON.parse(persisted);
-    return !!parsed?.state?.isAuthenticated;
-  } catch {
-    return false;
-  }
+  return useAuthStore.getState().isAuthenticated;
 };
 
 // Get redirect path after login

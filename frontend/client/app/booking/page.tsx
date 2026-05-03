@@ -1,20 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { getToken } from "@/services/localStorageService";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function BookingPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push("/");
-    }
-  }, [router]);
-
   return (
     <div className="min-h-screen pt-20 pb-12 px-4">
       <div className="container mx-auto max-w-6xl">

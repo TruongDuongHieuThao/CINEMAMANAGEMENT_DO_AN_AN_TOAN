@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken, getUserInfo } from "@/services/localStorageService";
 import { useRouter } from "next/navigation";
 import {
   getTicketsByCustomer,
@@ -25,28 +24,17 @@ export default function MyTicketsPage() {
   const PAGE_SIZE = 9;
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push("/");
-      return;
-    }
-
     const fetchTickets = async () => {
       try {
         setLoading(true);
 
-        // Try to get user info from localStorage first
-        let userInfo = getUserInfo();
-
-        // If not available in localStorage, fetch from API
-        if (!userInfo || (!userInfo.id && !userInfo.customerId)) {
-          try {
-            userInfo = await getMyInfo();
-          } catch (error: any) {
-            console.error("Error fetching user info:", error);
-            setError("Unable to fetch user information. Please sign in again.");
-            return;
-          }
+        let userInfo;
+        try {
+          userInfo = await getMyInfo();
+        } catch (error: any) {
+          console.error("Error fetching user info:", error);
+          setError("Unable to fetch user information. Please sign in again.");
+          return;
         }
 
         // Get customer ID (prefer 'id' field, fallback to 'customerId')

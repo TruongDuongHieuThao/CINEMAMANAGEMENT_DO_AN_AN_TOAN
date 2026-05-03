@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getToken } from "@/services/localStorageService";
+import { useAuthStore } from "@/store";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,12 +12,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const authState = useAuthStore((state) => state.isAuthenticated);
+  const isChecking = useAuthStore((state) => state.isChecking);
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = getToken();
+      if (isChecking) {
+        setIsAuthenticated(null);
+        return;
+      }
 
-      if (!token) {
+      if (!authState) {
         setIsAuthenticated(false);
         // Redirect to home page if not authenticated
         router.push("/");
@@ -27,7 +32,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     };
 
     checkAuth();
-  }, [pathname, router]);
+  }, [pathname, router, authState, isChecking]);
 
   // Show loading state while checking authentication
   if (isAuthenticated === null) {

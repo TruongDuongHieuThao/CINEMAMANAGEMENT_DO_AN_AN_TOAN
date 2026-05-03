@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  isProtectedRoute,
-  isAuthenticated,
-  setRedirectPath,
-} from "@/lib/auth-utils";
+import { isProtectedRoute, setRedirectPath } from "@/lib/auth-utils";
 import { useAuthModalStore } from "@/store";
+import { useAuthStore } from "@/store";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -21,20 +18,27 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
   // Zustand store
   const openLoginModal = useAuthModalStore((state) => state.openLoginModal);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isChecking = useAuthStore((state) => state.isChecking);
 
   useEffect(() => {
     // Check authentication on route change
     authCheck(pathname);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, isAuthenticated, isChecking]);
 
   function authCheck(url: string) {
+    if (isChecking) {
+      setChecked(false);
+      return;
+    }
+
     setChecked(false);
 
     // Check if route is protected
     if (isProtectedRoute(url)) {
-      const authenticated = isAuthenticated();
+      const authenticated = isAuthenticated;
 
       if (!authenticated) {
         // Save the intended destination
@@ -61,7 +65,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
 
   // Don't render until checked
   if (!checked) {
-    return null;
+    return <div className="min-h-screen" />;
   }
 
   return <>{children}</>;

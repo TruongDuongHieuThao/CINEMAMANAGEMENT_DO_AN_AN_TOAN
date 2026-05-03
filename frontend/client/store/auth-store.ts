@@ -14,6 +14,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import httpClient from "@/configurations/httpClient";
+import { removeUserInfo } from "@/services/localStorageService";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -71,6 +72,7 @@ export const useAuthStore = create<AuthStore>()(
             // Ignore logout API failures - proceed with client-side state reset
             console.error("Logout error:", error);
           }
+          removeUserInfo();
           set({ isAuthenticated: false });
         },
 

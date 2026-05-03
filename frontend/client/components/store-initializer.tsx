@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/store";
-import httpClient from "@/configurations/httpClient";
-import { getToken } from "@/services/localStorageService";
+import { getMyInfo } from "@/services/customerService";
+import { removeUserInfo, setUserInfo } from "@/services/localStorageService";
 
 /**
  * StoreInitializer - Initialize stores on app mount
@@ -12,7 +12,8 @@ import { getToken } from "@/services/localStorageService";
 export function StoreInitializer({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
   const login = useAuthStore((state) => state.login);
-  const logout = useAuthStore((state) => state.logout);
+  const setIsChecking = useAuthStore((state) => state.setIsChecking);
+  const setAuthState = useAuthStore.setState;
 
   useEffect(() => {
     if (initialized.current) {
@@ -20,29 +21,28 @@ export function StoreInitializer({ children }: { children: React.ReactNode }) {
     }
 
     const initAuth = async () => {
-      const token = getToken();
-      if (!token) {
-        logout();
-        initialized.current = true;
-        return;
-      }
-
       try {
-        const response = await httpClient.post("/auth/introspect", { token });
-        if (response.data?.result?.valid) {
+        setIsChecking(true);
+
+        const userInfo = await getMyInfo();
+        if (userInfo) {
+          setUserInfo(userInfo);
           login();
         } else {
-          logout();
+          removeUserInfo();
+          setAuthState({ isAuthenticated: false, isChecking: false });
         }
       } catch (error) {
-        logout();
+        removeUserInfo();
+        setAuthState({ isAuthenticated: false, isChecking: false });
+      } finally {
+        setIsChecking(false);
+        initialized.current = true;
       }
-
-      initialized.current = true;
     };
 
     void initAuth();
-  }, [login, logout]);
+  }, [login, setAuthState, setIsChecking]);
 
   return <>{children}</>;
 }

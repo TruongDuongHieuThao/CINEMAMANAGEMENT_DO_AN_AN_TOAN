@@ -25,7 +25,6 @@ import {
   cancelBooking,
 } from "@/services/bookingService";
 import type { BookingSummaryResponse } from "@/services/bookingService";
-import { getUserInfo, getToken } from "@/services/localStorageService";
 import { getMyInfo } from "@/services/customerService";
 import type { Seat, ComboItem, Showtime } from "@/lib/types";
 import SeatSelectionStep from "@/components/booking/seat-selection-step";
@@ -576,13 +575,7 @@ export default function BookingPage({
   useEffect(() => {
     const fetchCustomerPoints = async () => {
       try {
-        const token = getToken();
-        if (!token) return;
-
-        let userInfo = getUserInfo();
-        if (!userInfo || (!userInfo.id && !userInfo.customerId)) {
-          userInfo = await getMyInfo();
-        }
+        const userInfo = await getMyInfo();
 
         if (typeof userInfo?.loyaltyPoints === "number") {
           setCustomerPoints(userInfo.loyaltyPoints);
@@ -720,38 +713,8 @@ export default function BookingPage({
       try {
         setIsCreatingBooking(true);
 
-        // Kiểm tra đăng nhập
-        const token = getToken();
-        console.log("Token:", token ? "exists" : "not found");
-
-        if (!token) {
-          setGeneralError({
-            title: "Authentication Required",
-            message: "Please sign in to continue booking",
-          });
-          return;
-        }
-
-        // Lấy thông tin customer từ localStorage hoặc API
-        let userInfo = getUserInfo();
-        console.log("UserInfo from localStorage:", userInfo);
-
-        // Nếu không có userInfo/id/customerId trong localStorage (trường hợp login bằng email/password), gọi API
-        if (!userInfo || (!userInfo.id && !userInfo.customerId)) {
-          console.log("Fetching user info from API...");
-          try {
-            userInfo = await getMyInfo();
-            console.log("UserInfo from API:", userInfo);
-          } catch (error: any) {
-            console.error("Error fetching user info:", error);
-            console.error("Error response:", error?.response?.data);
-            setGeneralError({
-              title: "User Info Error",
-              message: `Unable to fetch user info: ${error?.response?.data?.message || error.message || "Please sign in again."}`,
-            });
-            return;
-          }
-        }
+        // Lấy thông tin customer từ API session-backed cookie
+        const userInfo = await getMyInfo();
 
         const customerId = userInfo?.id || userInfo?.customerId;
 

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { getToken } from "@/services/localStorageService";
-import { CONFIG } from "@/configurations/configuration";
+import httpClient from "@/configurations/httpClient";
 
 interface PaymentStepProps {
   bookingId: string;
@@ -24,51 +23,23 @@ export default function PaymentStep({
         setIsLoading(true);
         setError(null);
 
-        const token = getToken();
-        if (!token) {
-          throw new Error("No authentication token found. Please log in.");
-        }
-
-        const invoiceResponse = await fetch(
-          `${CONFIG.API}/bookings/${bookingId}/create-invoice`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          },
+        const invoiceResponse = await httpClient.post(
+          `/bookings/${bookingId}/create-invoice`,
+          {},
         );
 
-        if (!invoiceResponse.ok) {
-          const errorText = await invoiceResponse.text();
-          throw new Error(`Failed to create invoice: ${errorText}`);
-        }
-
-        const invoiceData = await invoiceResponse.json();
-        const invoiceId = invoiceData?.result?.id;
+        const invoiceId = invoiceResponse.data?.result?.id;
 
         if (!invoiceId) {
           throw new Error("No invoice id returned by server");
         }
 
-        const paymentResponse = await fetch(
-          `${CONFIG.API}/payment/cash/${invoiceId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          },
+        const paymentResponse = await httpClient.post(
+          `/payment/cash/${invoiceId}`,
+          {},
         );
 
-        if (!paymentResponse.ok) {
-          const errorText = await paymentResponse.text();
-          throw new Error(`Failed to process cash payment: ${errorText}`);
-        }
-
-        const paymentData = await paymentResponse.json();
+        const paymentData = paymentResponse.data;
         if (paymentData?.result?.code === "00") {
           onPaymentSuccess();
         } else {
