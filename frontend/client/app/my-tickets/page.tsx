@@ -37,8 +37,8 @@ export default function MyTicketsPage() {
           return;
         }
 
-        // Get customer ID (prefer 'id' field, fallback to 'customerId')
-        const cusId = userInfo?.id || userInfo?.customerId;
+        // Get customer ID from the session-backed profile
+        const cusId = userInfo?.customerId;
 
         if (!cusId) {
           setError("Customer information not found");

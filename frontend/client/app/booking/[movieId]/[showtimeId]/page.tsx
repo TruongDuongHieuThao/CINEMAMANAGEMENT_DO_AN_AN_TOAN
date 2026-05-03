@@ -716,7 +716,7 @@ export default function BookingPage({
         // Lấy thông tin customer từ API session-backed cookie
         const userInfo = await getMyInfo();
 
-        const customerId = userInfo?.id || userInfo?.customerId;
+        const customerId = userInfo?.customerId;
 
         if (!customerId) {
           console.error(
