@@ -14,7 +14,7 @@ export function useSocket(url?: string) {
   const isConnectedRef = useRef(false);
 
   const socketUrl = url || import.meta.env.VITE_SOCKET_URL || 
-    (import.meta.env.PROD ? 'https://api.privateclinic.id.vn' : 'http://localhost:9092');
+    (import.meta.env.PROD ? 'https://privateclinic.id.vn' : 'http://localhost:9092');
 
   useEffect(() => {
     // Connect to Socket.IO if we have a token and not already connected

@@ -8,7 +8,7 @@ export const APP_CONFIG = {
   BASE_PATH: import.meta.env.VITE_BASE_PATH || '/',
   
   // API configuration
-  API_URL: import.meta.env.VITE_API_URL || 'https://api.privateclinic.id.vn/api/theater-mgnt',
+  API_URL: import.meta.env.VITE_API_URL || 'https://privateclinic.id.vn/api/theater-mgnt',
   
   // Application info
   APP_NAME: 'Cinema Manager',
