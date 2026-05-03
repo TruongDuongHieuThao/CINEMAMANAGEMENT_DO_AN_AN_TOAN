@@ -1,5 +1,5 @@
 export const CONFIG = {
-  API: import.meta.env.VITE_API_URL || "http://localhost:8080/api/theater-mgnt",
+  API: import.meta.env.VITE_API_URL || "https://api.privateclinic.id.vn/api/theater-mgnt",
 }
 
 // Deploy API: https://api.privateclinic.id.vn/api/theater-mgnt

@@ -1,4 +1,4 @@
-export const LOCAL_API_URL = "https://privateclinic.id.vn/api/theater-mgnt";
+export const LOCAL_API_URL = "https://api.privateclinic.id.vn/api/theater-mgnt";
 
 const getEnvValue = (key: string): string | undefined => {
   const processEnv = (globalThis as typeof globalThis & {
