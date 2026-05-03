@@ -16,6 +16,9 @@ export default function ProfilePage() {
   const [saveResult, setSaveResult] = useState<string | null>(null);
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const displayName = userInfo
+    ? `${userInfo.firstName} ${userInfo.lastName}`.trim()
+    : "User";
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -71,11 +74,11 @@ export default function ProfilePage() {
         <div className="bg-card border border-border rounded-2xl p-8">
           <div className="flex items-center gap-6 mb-8">
             <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold">
-              {userInfo?.fullName?.charAt(0)?.toUpperCase() || "U"}
+              {displayName.charAt(0).toUpperCase() || "U"}
             </div>
             <div>
               <h2 className="text-2xl font-bold mb-1">
-                {userInfo?.fullName || "User"}
+                {displayName}
               </h2>
               <p className="text-muted-foreground">
                 {userInfo?.email || "No email"}
@@ -115,13 +118,13 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {userInfo?.dateOfBirth && (
+            {userInfo?.dob && (
               <div>
                 <label className="text-sm text-muted-foreground">
                   Date of Birth
                 </label>
                 <p className="text-lg">
-                  {new Date(userInfo.dateOfBirth).toLocaleDateString()}
+                  {new Date(userInfo.dob).toLocaleDateString()}
                 </p>
               </div>
             )}

@@ -8,7 +8,6 @@ export const TicketBookingPage = () => {
 
   const [showtimes, setShowtimes] = useState<any[]>([]);
   const [showtimesLoading, setShowtimesLoading] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<any>(null);
 
   // ✅ FIX: đưa logic vào useEffect
   useEffect(() => {
@@ -46,7 +45,7 @@ export const TicketBookingPage = () => {
     };
 
     fetchShowtimes();
-  }, [cinemaId, selectedMovie]);
+  }, [cinemaId]);
 
   // ✅ UI để cuối cùng
   return (

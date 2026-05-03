@@ -15,10 +15,6 @@ import {
   CalendarClock,
   Wrench,
   MessageSquare,
-  Image,
-  Bell,
-  FileText,
-  History,
 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { PERMISSIONS } from "@/constants/permissions";

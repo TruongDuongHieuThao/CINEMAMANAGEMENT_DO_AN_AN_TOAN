@@ -86,7 +86,7 @@ export const useAuthStore = create<AuthState>()(
 
 // Selectors for optimized re-renders
 export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
-export const selectToken = (state: AuthState) => state.token;
+export const selectToken = (_state: AuthState) => "";
 export const selectUserId = (state: AuthState) => state.userId;
 export const selectCinemaId = (state: AuthState) => state.cinemaId;
 export const selectPermissions = (state: AuthState) => state.permissions;

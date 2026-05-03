@@ -18,7 +18,7 @@ export const KEY_TOKEN = "accessToken";
  * @deprecated - NO-OP function. Do not use.
  * Token is now managed by browser via httpOnly cookies.
  */
-export const setToken = (token: string): void => {
+export const setToken = (_token: string): void => {
   if (typeof window !== "undefined") {
     console.warn(
       "[DEPRECATED] setToken() is a NO-OP. " +
