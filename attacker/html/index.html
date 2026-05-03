@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSRF Attacker Site</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .lab-link {
+        display: block;
+        margin: 10px 0;
+        padding: 10px;
+        background: #f0f0f0;
+        text-decoration: none;
+        color: black;
+      }
+      .lab-link:hover {
+        background: #e0e0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CSRF Attacker Site</h1>
+    <p>
+      This site hosts CSRF attack PoCs. Use with Burp Suite to generate and test
+      attacks.
+    </p>
+
+    <h2>Available Attack Pages:</h2>
+    <a href="/csrf-real-profile.html" class="lab-link" style="background:#ffe0e0;font-weight:bold">
+      ⚠️ REAL ATTACK: Đổi email profile thực (không qua lab controller)
+    </a>
+    <a href="/csrf-lab1.html" class="lab-link">Lab 1: No CSRF Defenses</a>
+    <a href="/csrf-lab2.html" class="lab-link"
+      >Lab 2: Method-dependent Validation</a
+    >
+    <a href="/csrf-lab3.html" class="lab-link"
+      >Lab 3: Token Presence Validation</a
+    >
+    <a href="/csrf-lab11.html" class="lab-link">Lab 11: Referer Validation</a>
+
+    <h2>Instructions:</h2>
+    <ol>
+      <li>Login to victim app (localhost:3000) to get session</li>
+      <li>Perform action in victim app (e.g., change email)</li>
+      <li>Use Burp Suite to intercept the request</li>
+      <li>Right-click → Engagement tools → Generate CSRF PoC</li>
+      <li>
+        Copy the HTML form and paste into the corresponding lab file above
+      </li>
+      <li>Open the lab page in browser while still logged in</li>
+      <li>The form will auto-submit and perform the CSRF attack</li>
+    </ol>
+  </body>
+</html>

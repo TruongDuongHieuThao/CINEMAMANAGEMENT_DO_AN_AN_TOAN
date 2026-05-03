@@ -21,5 +21,7 @@ export const API = {
   // Customer endpoints
   UPDATE_CUSTOMER: "/customers/${customerId}",
   CUSTOMER_LOYALTY_POINTS: "/customers/${customerId}/loyalty-points",
+  UPDATE_MY_EMAIL_VULN: "/customers/myInfo/update-email-vuln",
+  UPDATE_MY_EMAIL_DEFENDED: "/customers/myInfo/update-email-defended",
+  UPDATE_MY_EMAIL_DEMO: "/customers/myInfo/update-email-demo",
 };
-

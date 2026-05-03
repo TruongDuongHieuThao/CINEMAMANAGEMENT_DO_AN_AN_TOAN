@@ -1,6 +1,5 @@
 import httpClient from "../configurations/httpClient";
 import { API } from "../configurations/configuration";
-import { getToken } from "./localStorageService";
 
 export interface CustomerInfo {
   customerId: string;
@@ -27,14 +26,12 @@ export interface UpdateCustomerRequest {
   gender?: string;
 }
 
+type DemoMode = "vulnerable" | "defended";
+
 // Get customer info
 export const getMyInfo = async (): Promise<CustomerInfo> => {
   try {
-    const response = await httpClient.get<{ result: CustomerInfo }>(API.MY_INFO, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    });
+    const response = await httpClient.get<{ result: CustomerInfo }>(API.MY_INFO);
     
     return response.data.result;
   } catch (error) {
@@ -50,11 +47,7 @@ export const updateMyInfo = async (
 ): Promise<CustomerInfo> => {
   try {
     const url = API.UPDATE_CUSTOMER.replace("${customerId}", customerId);
-    const response = await httpClient.put<{ result: CustomerInfo }>(url, data, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    });
+    const response = await httpClient.put<{ result: CustomerInfo }>(url, data);
     
     return response.data.result;
   } catch (error) {
@@ -67,11 +60,7 @@ export const updateMyInfo = async (
 export const getCustomerLoyaltyPoints = async (customerId: string): Promise<number> => {
   try {
     const url = API.CUSTOMER_LOYALTY_POINTS.replace("${customerId}", customerId);
-    const response = await httpClient.get<{ result: { loyaltyPoints: number } }>(url, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    });
+    const response = await httpClient.get<{ result: { loyaltyPoints: number } }>(url);
     
     return response.data.result.loyaltyPoints;
   } catch (error) {
@@ -80,3 +69,31 @@ export const getCustomerLoyaltyPoints = async (customerId: string): Promise<numb
   }
 };
 
+export const updateMyEmailForCsrfDemo = async (
+  email: string,
+  mode: DemoMode
+): Promise<CustomerInfo> => {
+  const url = API.UPDATE_MY_EMAIL_DEMO;
+
+  // Gửi dạng form-encoded để Burp Suite có thể "Generate CSRF PoC" ra HTML form
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+
+  // Luôn gửi CSRF token — browser hợp lệ đọc được cookie, HTML form của attacker không thể set header này
+  const csrfToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("XSRF-TOKEN="))
+    ?.split("=")[1];
+  if (csrfToken) {
+    headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfToken);
+  }
+
+  const response = await httpClient.post<{ result: CustomerInfo }>(
+    url,
+    new URLSearchParams({ email }),
+    { headers }
+  );
+
+  return response.data.result;
+};

@@ -3,6 +3,20 @@ import { jwtDecode } from 'jwt-decode';
 /**
  * JWT Utility functions for decoding and extracting token information
  * Using jwt-decode library for robust token handling
+ * 
+ * @deprecated These functions are for backward compatibility.
+ * Backend now validates all JWT signatures.
+ * Frontend should not rely on client-side JWT parsing for security decisions.
+ * 
+ * These functions are ONLY for:
+ * - Extracting user metadata from token response (userId, permissions)
+ * - Display purposes in UI
+ * - NOT for security validations (backend does that)
+ * 
+ * Migration: JWT Session using httpOnly cookies
+ * - Token stored in httpOnly cookie (not localStorage)
+ * - Browser auto-sends with each request
+ * - Backend verifies signature on each request
  */
 
 export interface DecodedToken {

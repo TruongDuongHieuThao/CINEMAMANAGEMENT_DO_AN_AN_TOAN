@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, Wallet } from "lucide-react";
+import { CheckCircle2, Wallet } from "lucide-react";
 import { format } from "date-fns";
 import type { Seat, ComboItem, Showtime } from "../../../lib/types";
 import type { MovieSimple } from "@/services/movieService";
@@ -31,7 +31,6 @@ export default function PaymentStep({
   selectedCombos,
   onPaymentSuccess,
 }: PaymentStepProps) {
-  const [selectedMethod] = useState<"cash">("cash");
   const [isPaying, setIsPaying] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 

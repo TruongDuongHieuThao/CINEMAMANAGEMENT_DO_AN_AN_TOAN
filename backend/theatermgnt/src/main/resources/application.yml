@@ -31,7 +31,7 @@ spring:
           batch_size: 50
         order_inserts: true
 jwt:
-  signerKey: "+PAV/uNVIsN2N1peTkAViUZSSc+t8/wOZQDw8M2+HxBD/2dFy9segSiMPHBr+q97"
+  signerKey: KhJ2mK5ryihSmcfLa2fLvdg0ZFBneDjqIiSqvxfGxJjSDqdVLs8RLJZ0zWkQUhf840x6xJ18eeA0hTjTORr49f
   refreshable-duration: 36000
   valid-duration: 3600
 otp:
@@ -42,4 +42,5 @@ app:
     allowed-origins:
       - http://localhost:3000
       - http://localhost:5173
-
+      - http://localhost:5173
+      - http://localhost:4000

@@ -3,6 +3,8 @@ package com.theatermgnt.theatermgnt.payment.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import com.theatermgnt.theatermgnt.booking.service.BookingService;
@@ -19,7 +21,6 @@ import com.theatermgnt.theatermgnt.payment.repository.PaymentMethodRepository;
 import com.theatermgnt.theatermgnt.payment.repository.PaymentRepository;
 import com.theatermgnt.theatermgnt.revenue.service.RevenueAggregationService;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +52,12 @@ public class PaymentServiceImpl implements PaymentService {
                 return new AppException(ErrorCode.PAYMENT_METHOD_NOT_EXISTED);
             });
 
-            String txnRef = "CASH" + UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+            String txnRef = "CASH"
+                    + UUID.randomUUID()
+                            .toString()
+                            .replace("-", "")
+                            .substring(0, 10)
+                            .toUpperCase();
 
             Payment payment = Payment.builder()
                     .invoiceId(invoiceId)
