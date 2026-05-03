@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { CONFIG } from "@/configurations/configuration";
 
 export default function JwtLabsPage() {
   const [result, setResult] = useState("");
@@ -20,7 +21,7 @@ export default function JwtLabsPage() {
   const testLab = async (labNumber: number) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/theater-mgnt/security-lab/jwt/lab${labNumber}/whoami`,
+        `${CONFIG.API}/security-lab/jwt/lab${labNumber}/whoami`,
         {
           credentials: "include",
         },

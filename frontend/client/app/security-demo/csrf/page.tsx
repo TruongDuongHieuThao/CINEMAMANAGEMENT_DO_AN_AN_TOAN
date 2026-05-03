@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { CONFIG } from "@/configurations/configuration";
 
 interface CustomerInfo {
   email: string;
@@ -23,7 +24,7 @@ export default function CsrfDemoPage() {
     setLoadingInfo(true);
     try {
       const res = await fetch(
-        "http://localhost:8080/api/theater-mgnt/customers/myInfo",
+        `${CONFIG.API}/customers/myInfo`,
         { credentials: "include" },
       );
       if (res.ok) {
@@ -45,7 +46,7 @@ export default function CsrfDemoPage() {
     setAttackResult(null);
     try {
       const res = await fetch(
-        "http://localhost:8080/api/theater-mgnt/customers/myInfo/update-email-vuln",
+        `${CONFIG.API}/customers/myInfo/update-email-vuln`,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

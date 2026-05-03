@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuthStore } from "@/store";
+import { CONFIG } from "@/configurations/configuration";
 
 export default function SecurityDemoPage() {
   const [loginIdentifier, setLoginIdentifier] = useState("");
@@ -18,7 +19,7 @@ export default function SecurityDemoPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/theater-mgnt/auth/customer/login",
+        `${CONFIG.API}/auth/customer/login`,
         {
           method: "POST",
           headers: {

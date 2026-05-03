@@ -4,11 +4,11 @@
   "rewrites": [
     {
       "source": "/api-backend/:path*",
-      "destination": "http://localhost:8080/api/theater-mgnt/:path*"
+      "destination": "https://api.privateclinic.id.vn/api/theater-mgnt/:path*"
     },
     {
       "source": "/api/movies/:path*",
-      "destination": "http://localhost:8080/api/movies/:path*"
+      "destination": "https://api.privateclinic.id.vn/api/movies/:path*"
     }
   ],
   "headers": [
